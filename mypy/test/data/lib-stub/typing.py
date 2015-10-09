@@ -22,7 +22,11 @@ List = object()
 Dict = object()
 Set = object()
 
+# Needed to create covariant type variables
+True = object()
+
 T = TypeVar('T')
+U = TypeVar('U', covariant=True)
 
 class Iterable(Generic[T]):
     @abstractmethod
@@ -32,6 +36,6 @@ class Iterator(Iterable[T], Generic[T]):
     @abstractmethod
     def __next__(self) -> T: pass
 
-class Sequence(Generic[T]):
+class Sequence(Generic[U]):
     @abstractmethod
-    def __getitem__(self, n: Any) -> T: pass
+    def __getitem__(self, n: Any) -> U: pass

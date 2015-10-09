@@ -68,6 +68,8 @@ GENERIC_TYPE_NOT_VALID_AS_EXPRESSION = \
     "Generic type not valid as an expression any more (use '# type:' comment instead)"
 RETURN_TYPE_CANNOT_BE_CONTRAVARIANT = "Cannot use a contravariant type variable as return type"
 FUNCTION_PARAMETER_CANNOT_BE_COVARIANT = "Cannot use a covariant type variable as a parameter"
+CANNOT_USE_COVARIANT = "Cannot use a covariant type variable in this context"
+CANNOT_USE_CONTRAVARIANT = "Cannot use a contravariant type variable in this context"
 
 
 class MessageBuilder:

@@ -690,3 +690,208 @@ c = None  # type: G[C]
 b = a  # E: Incompatible types in assignment (expression has type G[A], variable has type G[B])
 b = c  # E: Incompatible types in assignment (expression has type G[C], variable has type G[B])
 [out]
+
+[case testInheritCovariantFromInvariant]
+from typing import TypeVar, Generic
+
+u = TypeVar('u')
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t', covariant=True)
+class B(Generic[t], A[t]):
+    pass
+[builtins fixtures/bool.py]
+[out]
+main: note: In class "B":
+main:8: error: Cannot use a covariant type variable in this context
+
+[case testInheritContravariantFromInvariant]
+from typing import TypeVar, Generic
+
+u = TypeVar('u')
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t', contravariant=True)
+class B(Generic[t], A[t]):
+    pass
+[builtins fixtures/bool.py]
+[out]
+main: note: In class "B":
+main:8: error: Cannot use a contravariant type variable in this context
+
+[case testInheritCovariantFromCovariant]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', covariant=True)
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t', covariant=True)
+class B(Generic[t], A[t]):
+    pass
+[builtins fixtures/bool.py]
+[case testInheritInvariantFromCovariant]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', covariant=True)
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t')
+class B(Generic[t], A[t]):
+    pass
+[builtins fixtures/bool.py]
+[case testInheritContravariantFromCovariant]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', covariant=True)
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t', contravariant=True)
+class B(Generic[t], A[t]):
+    pass
+[builtins fixtures/bool.py]
+[out]
+main: note: In class "B":
+main:8: error: Cannot use a contravariant type variable in this context
+
+[case testInheritContravariantFromContravariant]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', contravariant=True)
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t', contravariant=True)
+class B(Generic[t], A[t]):
+    pass
+[builtins fixtures/bool.py]
+[case testInheritInvariantFromContravariant]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', contravariant=True)
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t')
+class B(Generic[t], A[t]):
+    pass
+[builtins fixtures/bool.py]
+[case testInheritCovariantFromContravariant]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', contravariant=True)
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t', covariant=True)
+class B(Generic[t], A[t]):
+    pass
+[builtins fixtures/bool.py]
+[out]
+main: note: In class "B":
+main:8: error: Cannot use a covariant type variable in this context
+
+[case testInheritCovariantFromContravariantNested]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', contravariant=True)
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t', covariant=True)
+class B(Generic[t], A[A[t]]):
+    pass
+[builtins fixtures/bool.py]
+[out]
+main: note: In class "B":
+main:8: error: Cannot use a covariant type variable in this context
+
+[case testInheritCovariantFromCovariantNested]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', covariant=True)
+class A(Generic[u]):
+    pass
+
+t = TypeVar('t', covariant=True)
+class B(Generic[t], A[A[t]]):
+    pass
+[builtins fixtures/bool.py]
+[case testInheritCovariantFromInvariantTrickyNested]
+from typing import TypeVar, Generic
+
+u = TypeVar('u')
+t = TypeVar('t', covariant=True)
+class A(Generic[u]):
+    pass
+
+class B(Generic[t]):
+    pass
+
+class C(Generic[t], A[B[t]]):
+    pass
+[builtins fixtures/bool.py]
+[out]
+main: note: In class "C":
+main:11: error: Cannot use a covariant type variable in this context
+
+[case testInheritCovariantFromCovariantTrickyNested]
+from typing import TypeVar, Generic
+
+u = TypeVar('u', covariant=True)
+t = TypeVar('t', covariant=True)
+class A(Generic[u]):
+    pass
+
+class B(Generic[t]):
+    pass
+
+class C(Generic[t], A[B[t]]):
+    pass
+[builtins fixtures/bool.py]
+[case testInheritCovariantFromInvariantTrickyNestedWithMultipleArgs]
+from typing import TypeVar, Generic
+
+u = TypeVar('u')
+v = TypeVar('v')
+t = TypeVar('t', covariant=True)
+
+class N:
+    pass
+
+class A(Generic[u, v]):
+    pass
+
+class B(Generic[t]):
+    pass
+
+class C(Generic[t], A[N, B[t]]):
+    pass
+[builtins fixtures/bool.py]
+[out]
+main: note: In class "C":
+main:16: error: Cannot use a covariant type variable in this context
+
+[case testInheritCovariantFromCovariantTrickyNestedWithMultipleArgs]
+from typing import TypeVar, Generic
+
+u = TypeVar('u')
+v = TypeVar('v', covariant=True)
+t = TypeVar('t', covariant=True)
+
+class N:
+    pass
+
+class A(Generic[u, v]):
+    pass
+
+class B(Generic[t]):
+    pass
+
+class C(Generic[t], A[N, B[t]]):
+    pass
+[builtins fixtures/bool.py]

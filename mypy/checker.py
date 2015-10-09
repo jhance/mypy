@@ -19,14 +19,14 @@ from mypy.nodes import (
     LITERAL_TYPE, BreakStmt, ContinueStmt, ComparisonExpr, StarExpr,
     YieldFromExpr, YieldFromStmt, NamedTupleExpr, SetComprehension,
     DictionaryComprehension, ComplexExpr, EllipsisExpr, TypeAliasExpr,
-    RefExpr, YieldExpr, CONTRAVARIANT, COVARIANT
+    RefExpr, YieldExpr, CONTRAVARIANT, COVARIANT, INVARIANT, MDEF
 )
 from mypy.nodes import function_type, method_type, method_type_with_fallback
 from mypy import nodes
 from mypy.types import (
     Type, AnyType, CallableType, Void, FunctionLike, Overloaded, TupleType,
     Instance, NoneTyp, UnboundType, ErrorType, TypeTranslator, strip_type,
-    UnionType, TypeVarType,
+    UnionType, TypeVarDef, TypeVarType,
 )
 from mypy.sametypes import is_same_type
 from mypy.messages import MessageBuilder
@@ -867,7 +867,48 @@ class TypeChecker(NodeVisitor[Type]):
         self.accept(defn.defs)
         self.binder = old_binder
         self.check_multiple_inheritance(typ)
+        self.check_generic_inheritance(defn)
+        self.check_attribute_variance(typ)
         self.errors.pop_type()
+
+    def check_generic_inheritance(self, defn: ClassDef) -> None:
+        """Check for generic inheritance related errors."""
+        for base_type in defn.base_types:
+            self.check_instance_variance(base_type)
+
+    def check_attribute_variance(self, typ: TypeInfo) -> None:
+        for attribute, attribute_def in typ.names.items():
+            # This seems to correspond to attribute definitions
+            # according to the semantic analyzer
+            if attribute_def.kind == MDEF:
+                # attribute_def.type should never be none because we
+                # already completed the pass on the classdef
+                attribute_typ = attribute_def.type
+                if isinstance(attribute_typ, Instance):
+                    self.check_instance_variance(attribute_typ)
+
+    def check_instance_variance(self, inst: Instance) -> int:
+        variances = {INVARIANT, COVARIANT, CONTRAVARIANT}
+        self.traverse_instance_expecting(inst, variances)
+
+    def traverse_instance_expecting(self, inst: Instance, variances: Set[int]) -> None:
+        inst_vars = inst.type.defn.type_vars
+        for inst_arg_type, inst_arg in zip(inst_vars, inst.args):
+            new_variances = variances.intersection({
+                INVARIANT,
+                inst_arg_type.variance,
+            })
+            if isinstance(inst_arg, TypeVarType):
+                if inst_arg.variance not in new_variances:
+                    self.fail_with_variance(inst_arg.variance, inst_arg)
+            elif isinstance(inst_arg, Instance):
+                self.traverse_instance_expecting(inst_arg, new_variances)
+
+    def fail_with_variance(self, variance: int, context: TypeVarType) -> None:
+        if variance == COVARIANT:
+            self.fail(messages.CANNOT_USE_COVARIANT, context)
+        elif variance == CONTRAVARIANT:
+            self.fail(messages.CANNOT_USE_CONTRAVARIANT, context)
 
     def check_multiple_inheritance(self, typ: TypeInfo) -> None:
         """Check for multiple inheritance related errors."""
