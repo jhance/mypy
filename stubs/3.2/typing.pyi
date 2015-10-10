@@ -72,9 +72,9 @@ class SupportsRound(Generic[_T]):
     @abstractmethod
     def __round__(self, ndigits: int = 0) -> _T: ...
 
-class Reversible(Generic[_T]):
+class Reversible(Generic[_T_co]):
     @abstractmethod
-    def __reversed__(self) -> Iterator[_T]: ...
+    def __reversed__(self) -> Iterator[_T_co]: ...
 
 class Sized(metaclass=ABCMeta):
     @abstractmethod
