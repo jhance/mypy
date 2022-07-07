@@ -5,8 +5,8 @@ import os
 import os.path
 import sys
 
-if sys.version_info < (3, 6, 0):
-    sys.stderr.write("ERROR: You need Python 3.6 or later to use mypy.\n")
+if sys.version_info < (3, 7, 0):
+    sys.stderr.write("ERROR: You need Python 3.7 or later to use mypy.\n")
     exit(1)
 
 # we'll import stuff from the source tree, let's ensure is on the sys path
