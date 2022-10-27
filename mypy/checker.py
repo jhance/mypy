@@ -1174,12 +1174,17 @@ class TypeChecker(NodeVisitor[None], CheckerPluginInterface):
                         if isinstance(arg_type, ParamSpecType):
                             pass
                         elif isinstance(arg_type, UnpackType):
-                            arg_type = TupleType(
-                                [arg_type],
-                                fallback=self.named_generic_type(
-                                    "builtins.tuple", [self.named_type("builtins.object")]
-                                ),
-                            )
+                            if isinstance(arg_type.type, TupleType):
+                                # Instead of using Tuple[Unpack[Tuple[...]]], just use
+                                # Tuple[...]
+                                arg_type = arg_type.type
+                            else:
+                                arg_type = TupleType(
+                                    [arg_type],
+                                    fallback=self.named_generic_type(
+                                        "builtins.tuple", [self.named_type("builtins.object")]
+                                    ),
+                                )
                         else:
                             # builtins.tuple[T] is typing.Tuple[T, ...]
                             arg_type = self.named_generic_type("builtins.tuple", [arg_type])

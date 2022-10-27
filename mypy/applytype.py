@@ -11,6 +11,7 @@ from mypy.types import (
     Parameters,
     ParamSpecType,
     PartialType,
+    TupleType,
     Type,
     TypeVarId,
     TypeVarLikeType,
@@ -19,6 +20,7 @@ from mypy.types import (
     UnpackType,
     get_proper_type,
 )
+from mypy.typevartuples import find_unpack_in_list
 
 
 def get_target_type(
@@ -113,8 +115,24 @@ def apply_generic_arguments(
     # Apply arguments to argument types.
     var_arg = callable.var_arg()
     if var_arg is not None and isinstance(var_arg.typ, UnpackType):
-        expanded = expand_unpack_with_variables(var_arg.typ, id_to_type)
-        assert isinstance(expanded, list)
+        unpacked_type = get_proper_type(var_arg.typ.type)
+        if isinstance(unpacked_type, TupleType):
+            # Assuming for now that because we convert prefices to positional arguments,
+            # the first argument is always an unpack.
+            expanded_tuple = expand_type(unpacked_type, id_to_type)
+            if isinstance(expanded_tuple, TupleType):
+                # TODO: handle the case where the tuple has an unpack. This will
+                # hit an assert below.
+                expanded = expanded_tuple.items
+            else:
+                # TODO: handle the case for if we get a variable length tuple.
+                assert False, f"mypy bug: unimplemented case, {expanded_tuple}"
+        elif isinstance(unpacked_type, TypeVarTupleType):
+            expanded = expand_unpack_with_variables(var_arg.typ, id_to_type)
+            assert isinstance(expanded, list)
+        else:
+            assert False, "mypy bug: unhandled case applying unpack"
+
         # Handle other cases later.
         for t in expanded:
             assert not isinstance(t, UnpackType)
