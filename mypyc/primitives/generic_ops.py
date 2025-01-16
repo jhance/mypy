@@ -11,13 +11,14 @@ check that the priorities are configured properly.
 
 from __future__ import annotations
 
-from mypyc.ir.ops import ERR_MAGIC, ERR_NEVER
+from mypyc.ir.ops import ERR_MAGIC, ERR_NEVER, ERR_FALSE
 from mypyc.ir.rtypes import (
     bool_rprimitive,
     c_int_rprimitive,
     c_pyssize_t_rprimitive,
     c_size_t_rprimitive,
     int_rprimitive,
+    fast_iterable_rprimitive,
     object_pointer_rprimitive,
     object_rprimitive,
     pointer_rprimitive,
@@ -381,4 +382,18 @@ anext_op = custom_op(
     return_type=object_rprimitive,
     c_function_name="CPy_GetANext",
     error_kind=ERR_MAGIC,
+)
+
+fast_iter_op = custom_op(
+    arg_types=[object_rprimitive, fast_iterable_rprimitive],
+    return_type=bool_rprimitive,
+    c_function_name="CPy_FastIterable_New",
+    error_kind=ERR_FALSE,
+)
+
+fast_iter_next_op = custom_op(
+    arg_types=[fast_iterable_rprimitive],
+    return_type=object_rprimitive,
+    c_function_name="CPy_FastIterable_Next",
+    error_kind=ERR_NEVER,
 )

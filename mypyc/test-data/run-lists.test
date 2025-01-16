@@ -409,3 +409,21 @@ def test_index_with_literal() -> None:
     assert d is d2
     d = a[-2].d
     assert d is d1
+
+[case testSequenceIter]
+import array
+
+from typing import Sequence, List
+
+def loop(a: Sequence[int]) -> int:
+    x = 0
+    for b in a:
+        x += b
+    return x
+
+def test_loop() -> None:
+    assert loop([1,2,3]) == 6
+    assert loop((1,2,3)) == 6
+    assert loop([]) == 0
+    # Force a check for the generic case
+    assert loop(array.array("i", [1,2,3])) == 6

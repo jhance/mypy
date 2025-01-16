@@ -1,4 +1,4 @@
-// Mypyc C API
+
 
 #ifndef CPY_CPY_H
 #define CPY_CPY_H
@@ -63,6 +63,79 @@ typedef struct tuple_T4CIOO {
     PyObject *f3;  // Next dictionary value
 } tuple_T4CIOO;
 #endif
+
+// Fast iterable api
+
+typedef enum CPyFastIterableType {
+    CPyFAST_ITERABLE_UNINITIALIZED,
+    CPyFAST_ITERABLE_LIST,
+    // unused (todo)
+    CPyFAST_ITERABLE_TUPLE,
+    CPyFAST_ITERABLE_GENERIC,
+} CPyFastIterableType;
+
+typedef struct CPyFastIterable {
+    CPyFastIterableType type;
+    // Depending on the type, obj can either be the iteratee, or the iterator
+    // object constructed by it.
+    PyObject *obj;
+    // Only used in the non-generic case.
+    Py_ssize_t index;
+} CPyFastIterable;
+
+
+static inline bool CPy_FastIterable_New(PyObject *target, CPyFastIterable *iter) {
+    iter->index = 0;
+    if (PyList_CheckExact(target)) {
+        iter->type = CPyFAST_ITERABLE_LIST;
+        iter->obj = target;
+        Py_INCREF(target);
+    } else {
+        PyObject *iterator = PyObject_GetIter(target);
+        if (iterator == NULL) {
+            iter->type = CPyFAST_ITERABLE_UNINITIALIZED;
+            iter->obj = NULL;
+            return false;
+        }
+        iter->type = CPyFAST_ITERABLE_GENERIC;
+        iter->obj = iterator;
+    }
+    return true;
+}
+
+
+static inline PyObject *CPy_FastIterable_Next(CPyFastIterable *iter) {
+    switch (iter->type) {
+        case CPyFAST_ITERABLE_LIST:
+            {
+                // Have to recalculate size on each iteration since its valid
+                // for size to change mid-iteration
+                Py_ssize_t size = PyList_GET_SIZE(iter->obj);
+                if (iter->index < size) {
+                    PyObject *item = PyList_GET_ITEM(iter->obj, iter->index);
+                    Py_INCREF(item);
+                    iter->index++;
+                    return item;
+                } else {
+                        return NULL;
+                }
+            }
+        case CPyFAST_ITERABLE_TUPLE:
+            // fallthrough
+        case CPyFAST_ITERABLE_GENERIC:
+            return PyIter_Next(iter->obj);
+        case CPyFAST_ITERABLE_UNINITIALIZED:
+            // fallthrough
+        default:
+            return NULL;
+    }
+}
+
+static inline void CPy_FastIterable_Finalize(CPyFastIterable *iter) {
+    if (likely(iter->type != CPyFAST_ITERABLE_UNINITIALIZED)) {
+        Py_DECREF(iter->obj);
+    }
+}
 
 
 // Native object operations

@@ -224,13 +224,10 @@ class RPrimitive(RType):
         elif ctype == "CPyPtr":
             # TODO: Invent an overlapping error value?
             self.c_undefined = "0"
-        elif ctype == "PyObject *":
-            # Boxed types use the null pointer as the error value.
+        elif ctype.endswith("*"):
             self.c_undefined = "NULL"
         elif ctype == "char":
             self.c_undefined = "2"
-        elif ctype in ("PyObject **", "void *"):
-            self.c_undefined = "NULL"
         elif ctype == "double":
             self.c_undefined = "-113.0"
         elif ctype in ("uint8_t", "uint16_t", "uint32_t", "uint64_t"):
@@ -1033,6 +1030,14 @@ PyObject = RStruct(
 
 PyVarObject = RStruct(
     name="PyVarObject", names=["ob_base", "ob_size"], types=[PyObject, c_pyssize_t_rprimitive]
+)
+
+CPyFastIterable = RStruct(
+    name="CPyFastIterable", names=["type", "obj", "index"], types=[c_int_rprimitive, object_rprimitive, c_pyssize_t_rprimitive]
+)
+
+fast_iterable_rprimitive: Final = RPrimitive(
+    "fast_iterable_ptr", is_unboxed=False, is_refcounted=False, ctype="CPyFastIterable *"
 )
 
 setentry = RStruct(

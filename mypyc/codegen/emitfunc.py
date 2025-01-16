@@ -309,6 +309,9 @@ class FunctionEmitterVisitor(OpVisitor[None]):
             tmp = self.temp_name()
             self.emit_line("{} {} = {{ {} }};".format(self.ctype(op.type), tmp, ", ".join(values)))
             self.emit_line(f"{self.reg(op)} = {tmp};")
+        elif isinstance(op.type, RStruct) and op.type.name == "CPyFastIterable":
+            # Codegen is expected to call CPyFastIterable_New to initialize the struct.
+            pass
         else:
             self.emit_line(f"{self.reg(op)} = {self.c_error_value(op.type)};")
 

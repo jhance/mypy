@@ -153,12 +153,13 @@ class Register(Value):
     to refer to arbitrary Values (for example, in RegisterOp).
     """
 
-    def __init__(self, type: RType, name: str = "", is_arg: bool = False, line: int = -1) -> None:
+    def __init__(self, type: RType, name: str = "", is_arg: bool = False, line: int = -1, always_defined: bool = False) -> None:
         self.type = type
         self.name = name
         self.is_arg = is_arg
         self.is_borrowed = is_arg
         self.line = line
+        self.always_defined = always_defined
 
     @property
     def is_void(self) -> bool:

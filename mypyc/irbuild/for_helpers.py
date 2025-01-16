@@ -28,6 +28,7 @@ from mypyc.ir.ops import (
     Branch,
     Integer,
     IntOp,
+    KeepAlive,
     LoadAddress,
     LoadMem,
     RaiseStandardError,
@@ -39,6 +40,7 @@ from mypyc.ir.ops import (
 from mypyc.ir.rtypes import (
     RTuple,
     RType,
+    CPyFastIterable,
     bool_rprimitive,
     int_rprimitive,
     is_dict_rprimitive,
@@ -50,6 +52,7 @@ from mypyc.ir.rtypes import (
     is_tuple_rprimitive,
     pointer_rprimitive,
     short_int_rprimitive,
+    fast_iterable_rprimitive,
 )
 from mypyc.irbuild.builder import IRBuilder
 from mypyc.irbuild.targets import AssignmentTarget, AssignmentTargetTuple
@@ -63,7 +66,7 @@ from mypyc.primitives.dict_ops import (
     dict_value_iter_op,
 )
 from mypyc.primitives.exc_ops import no_err_occurred_op
-from mypyc.primitives.generic_ops import aiter_op, anext_op, iter_op, next_op
+from mypyc.primitives.generic_ops import aiter_op, anext_op, iter_op, next_op, fast_iter_op, fast_iter_next_op
 from mypyc.primitives.list_ops import list_append_op, list_get_item_unsafe_op, new_list_set_item_op
 from mypyc.primitives.misc_ops import stop_async_iteration_op
 from mypyc.primitives.registry import CFunctionDescription
@@ -586,9 +589,15 @@ class ForIterable(ForGenerator):
         # for the for-loop. If we are inside of a generator function, spill these into the
         # environment class.
         builder = self.builder
-        iter_reg = builder.primitive_op(iter_op, [expr_reg], self.line)
+        iter_reg = Register(CPyFastIterable, always_defined=True)
+        iter_addr = builder.add(LoadAddress(
+            fast_iterable_rprimitive, iter_reg, self.line
+        ))
+        builder.call_c(fast_iter_op, [expr_reg, iter_addr], self.line)
+        builder.maybe_spill(iter_reg)
         builder.maybe_spill(expr_reg)
-        self.iter_target = builder.maybe_spill(iter_reg)
+        self.iter_reg = iter_reg
+        self.iter_addr = iter_addr
         self.target_type = target_type
 
     def gen_condition(self) -> None:
@@ -598,7 +607,8 @@ class ForIterable(ForGenerator):
         # for NULL (an exception does not necessarily have to be raised).
         builder = self.builder
         line = self.line
-        self.next_reg = builder.call_c(next_op, [builder.read(self.iter_target, line)], line)
+        self.next_reg = builder.call_c(fast_iter_next_op, [builder.read(self.iter_addr, line)], line)
+
         builder.add(Branch(self.next_reg, self.loop_exit, self.body_block, Branch.IS_ERROR))
 
     def begin_body(self) -> None:
@@ -621,6 +631,7 @@ class ForIterable(ForGenerator):
         # True. If no_err_occurred_op returns False, then the exception will be
         # propagated using the ERR_FALSE flag.
         self.builder.call_c(no_err_occurred_op, [], self.line)
+        self.builder.add(KeepAlive([self.iter_reg]))
 
 
 class ForAsyncIterable(ForGenerator):

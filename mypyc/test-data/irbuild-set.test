@@ -132,32 +132,38 @@ L4:
 def test2():
     r0, tmp_tuple :: tuple[int, int, int]
     r1 :: set
-    r2, r3, r4 :: object
-    r5, x, r6 :: int
-    r7 :: object
-    r8 :: i32
-    r9, r10 :: bit
+    r2 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r3 :: fast_iterable_ptr
+    r4 :: object
+    r5 :: bool
+    r6 :: object
+    r7, x, r8 :: int
+    r9 :: object
+    r10 :: i32
+    r11, r12 :: bit
     b :: set
 L0:
     r0 = (2, 6, 10)
     tmp_tuple = r0
     r1 = PySet_New(0)
-    r2 = box(tuple[int, int, int], tmp_tuple)
-    r3 = PyObject_GetIter(r2)
+    r3 = load_address r2
+    r4 = box(tuple[int, int, int], tmp_tuple)
+    r5 = CPy_FastIterable_New(r4, r3)
 L1:
-    r4 = PyIter_Next(r3)
-    if is_error(r4) goto L4 else goto L2
+    r6 = CPy_FastIterable_Next(r3)
+    if is_error(r6) goto L4 else goto L2
 L2:
-    r5 = unbox(int, r4)
-    x = r5
-    r6 = f(x)
-    r7 = box(int, r6)
-    r8 = PySet_Add(r1, r7)
-    r9 = r8 >= 0 :: signed
+    r7 = unbox(int, r6)
+    x = r7
+    r8 = f(x)
+    r9 = box(int, r8)
+    r10 = PySet_Add(r1, r9)
+    r11 = r10 >= 0 :: signed
 L3:
     goto L1
 L4:
-    r10 = CPy_NoErrOccurred()
+    r12 = CPy_NoErrOccurred()
+    keep_alive r2
 L5:
     b = r1
     return 1
@@ -325,16 +331,24 @@ def test():
     r19 :: i32
     r20 :: bit
     r21 :: short_int
-    r22, r23, r24 :: object
-    r25, y, r26 :: int
-    r27 :: object
-    r28 :: i32
-    r29, r30 :: bit
-    r31, r32, r33 :: object
-    r34, x, r35 :: int
-    r36 :: object
-    r37 :: i32
-    r38, r39 :: bit
+    r22 :: object
+    r23 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r24 :: fast_iterable_ptr
+    r25 :: bool
+    r26 :: object
+    r27, y, r28 :: int
+    r29 :: object
+    r30 :: i32
+    r31, r32 :: bit
+    r33 :: object
+    r34 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r35 :: fast_iterable_ptr
+    r36 :: bool
+    r37 :: object
+    r38, x, r39 :: int
+    r40 :: object
+    r41 :: i32
+    r42, r43 :: bit
     a :: set
 L0:
     r0 = PyList_New(5)
@@ -379,38 +393,42 @@ L5:
     goto L1
 L6:
     r22 = PyObject_GetIter(r9)
-    r23 = PyObject_GetIter(r22)
+    r24 = load_address r23
+    r25 = CPy_FastIterable_New(r22, r24)
 L7:
-    r24 = PyIter_Next(r23)
-    if is_error(r24) goto L10 else goto L8
+    r26 = CPy_FastIterable_Next(r24)
+    if is_error(r26) goto L10 else goto L8
 L8:
-    r25 = unbox(int, r24)
-    y = r25
-    r26 = f2(y)
-    r27 = box(int, r26)
-    r28 = PyList_Append(r8, r27)
-    r29 = r28 >= 0 :: signed
+    r27 = unbox(int, r26)
+    y = r27
+    r28 = f2(y)
+    r29 = box(int, r28)
+    r30 = PyList_Append(r8, r29)
+    r31 = r30 >= 0 :: signed
 L9:
     goto L7
 L10:
-    r30 = CPy_NoErrOccurred()
+    r32 = CPy_NoErrOccurred()
+    keep_alive r23
 L11:
-    r31 = PyObject_GetIter(r8)
-    r32 = PyObject_GetIter(r31)
+    r33 = PyObject_GetIter(r8)
+    r35 = load_address r34
+    r36 = CPy_FastIterable_New(r33, r35)
 L12:
-    r33 = PyIter_Next(r32)
-    if is_error(r33) goto L15 else goto L13
+    r37 = CPy_FastIterable_Next(r35)
+    if is_error(r37) goto L15 else goto L13
 L13:
-    r34 = unbox(int, r33)
-    x = r34
-    r35 = f3(x)
-    r36 = box(int, r35)
-    r37 = PySet_Add(r7, r36)
-    r38 = r37 >= 0 :: signed
+    r38 = unbox(int, r37)
+    x = r38
+    r39 = f3(x)
+    r40 = box(int, r39)
+    r41 = PySet_Add(r7, r40)
+    r42 = r41 >= 0 :: signed
 L14:
     goto L12
 L15:
-    r39 = CPy_NoErrOccurred()
+    r43 = CPy_NoErrOccurred()
+    keep_alive r34
 L16:
     a = r7
     return 1
@@ -736,41 +754,51 @@ def not_precomputed() -> None:
 [out]
 def precomputed():
     r0 :: set
-    r1, r2 :: object
-    r3 :: str
+    r1 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r2 :: fast_iterable_ptr
+    r3 :: bool
+    r4 :: object
+    r5 :: str
     _ :: object
-    r4 :: bit
+    r6 :: bit
 L0:
     r0 = frozenset({'False', 'None', 'True'})
-    r1 = PyObject_GetIter(r0)
+    r2 = load_address r1
+    r3 = CPy_FastIterable_New(r0, r2)
 L1:
-    r2 = PyIter_Next(r1)
-    if is_error(r2) goto L4 else goto L2
+    r4 = CPy_FastIterable_Next(r2)
+    if is_error(r4) goto L4 else goto L2
 L2:
-    r3 = cast(str, r2)
-    _ = r3
+    r5 = cast(str, r4)
+    _ = r5
 L3:
     goto L1
 L4:
-    r4 = CPy_NoErrOccurred()
+    r6 = CPy_NoErrOccurred()
+    keep_alive r1
 L5:
     return 1
 def precomputed2():
     r0 :: set
-    r1, r2, _ :: object
-    r3 :: bit
+    r1 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r2 :: fast_iterable_ptr
+    r3 :: bool
+    r4, _ :: object
+    r5 :: bit
 L0:
     r0 = frozenset({(6,), 1, 10, 11, 2.0, '4', 7j, False, None, b'5'})
-    r1 = PyObject_GetIter(r0)
+    r2 = load_address r1
+    r3 = CPy_FastIterable_New(r0, r2)
 L1:
-    r2 = PyIter_Next(r1)
-    if is_error(r2) goto L4 else goto L2
+    r4 = CPy_FastIterable_Next(r2)
+    if is_error(r4) goto L4 else goto L2
 L2:
-    _ = r2
+    _ = r4
 L3:
     goto L1
 L4:
-    r3 = CPy_NoErrOccurred()
+    r5 = CPy_NoErrOccurred()
+    keep_alive r1
 L5:
     return 1
 def not_precomputed():
@@ -782,9 +810,12 @@ def not_precomputed():
     r5 :: object
     r6 :: i32
     r7 :: bit
-    r8, r9 :: object
-    r10, not_optimized :: int
-    r11 :: bit
+    r8 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r9 :: fast_iterable_ptr
+    r10 :: bool
+    r11 :: object
+    r12, not_optimized :: int
+    r13 :: bit
 L0:
     r0 = __main__.globals :: static
     r1 = 'non_const'
@@ -794,16 +825,19 @@ L0:
     r5 = box(int, r3)
     r6 = PySet_Add(r4, r5)
     r7 = r6 >= 0 :: signed
-    r8 = PyObject_GetIter(r4)
+    r9 = load_address r8
+    r10 = CPy_FastIterable_New(r4, r9)
 L1:
-    r9 = PyIter_Next(r8)
-    if is_error(r9) goto L4 else goto L2
+    r11 = CPy_FastIterable_Next(r9)
+    if is_error(r11) goto L4 else goto L2
 L2:
-    r10 = unbox(int, r9)
-    not_optimized = r10
+    r12 = unbox(int, r11)
+    not_optimized = r12
 L3:
     goto L1
 L4:
-    r11 = CPy_NoErrOccurred()
+    r13 = CPy_NoErrOccurred()
+    keep_alive r8
 L5:
     return 1
+

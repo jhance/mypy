@@ -25,6 +25,7 @@ from mypyc.ir.rtypes import (
     RInstance,
     RPrimitive,
     RTuple,
+    RStruct,
     RType,
     RUnion,
     int_rprimitive,
@@ -536,6 +537,8 @@ class Emitter:
         elif isinstance(rtype, RTuple):
             for i, item_type in enumerate(rtype.types):
                 self.emit_dec_ref(f"{dest}.f{i}", item_type, is_xdec=is_xdec, rare=rare)
+        elif isinstance(rtype, RStruct) and rtype.name == "CPyFastIterable":
+            self.emit_line(f"CPy_FastIterable_Finalize(&{dest});")
         elif not rtype.is_unboxed:
             if rare:
                 self.emit_line(f"CPy_{x}DecRef({dest});")

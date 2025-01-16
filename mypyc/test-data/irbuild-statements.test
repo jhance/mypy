@@ -904,26 +904,31 @@ L5:
 def g(x):
     x :: object
     r0 :: short_int
-    r1, r2 :: object
-    i, r3, n :: int
-    r4 :: short_int
-    r5 :: bit
+    r1 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r2 :: fast_iterable_ptr
+    r3 :: bool
+    r4 :: object
+    i, r5, n :: int
+    r6 :: short_int
+    r7 :: bit
 L0:
     r0 = 0
-    r1 = PyObject_GetIter(x)
+    r2 = load_address r1
+    r3 = CPy_FastIterable_New(x, r2)
 L1:
-    r2 = PyIter_Next(r1)
-    if is_error(r2) goto L4 else goto L2
+    r4 = CPy_FastIterable_Next(r2)
+    if is_error(r4) goto L4 else goto L2
 L2:
     i = r0
-    r3 = unbox(int, r2)
-    n = r3
+    r5 = unbox(int, r4)
+    n = r5
 L3:
-    r4 = r0 + 2
-    r0 = r4
+    r6 = r0 + 2
+    r0 = r6
     goto L1
 L4:
-    r5 = CPy_NoErrOccurred()
+    r7 = CPy_NoErrOccurred()
+    keep_alive r1
 L5:
     return 1
 
@@ -943,97 +948,105 @@ def f(a, b):
     a :: list
     b :: object
     r0 :: short_int
-    r1 :: object
-    r2 :: native_int
-    r3 :: short_int
-    r4 :: bit
-    r5, r6 :: object
-    r7, x :: int
-    r8, y :: bool
-    r9 :: i32
-    r10 :: bit
-    r11 :: bool
-    r12 :: short_int
-    r13 :: bit
+    r1 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r2 :: fast_iterable_ptr
+    r3 :: bool
+    r4 :: native_int
+    r5 :: short_int
+    r6 :: bit
+    r7, r8 :: object
+    r9, x :: int
+    r10, y :: bool
+    r11 :: i32
+    r12 :: bit
+    r13 :: bool
+    r14 :: short_int
+    r15 :: bit
 L0:
     r0 = 0
-    r1 = PyObject_GetIter(b)
+    r2 = load_address r1
+    r3 = CPy_FastIterable_New(b, r2)
 L1:
-    r2 = var_object_size a
-    r3 = r2 << 1
-    r4 = int_lt r0, r3
-    if r4 goto L2 else goto L7 :: bool
+    r4 = var_object_size a
+    r5 = r4 << 1
+    r6 = int_lt r0, r5
+    if r6 goto L2 else goto L7 :: bool
 L2:
-    r5 = PyIter_Next(r1)
-    if is_error(r5) goto L7 else goto L3
+    r7 = CPy_FastIterable_Next(r2)
+    if is_error(r7) goto L7 else goto L3
 L3:
-    r6 = list_get_item_unsafe a, r0
-    r7 = unbox(int, r6)
-    x = r7
-    r8 = unbox(bool, r5)
-    y = r8
-    r9 = PyObject_IsTrue(b)
-    r10 = r9 >= 0 :: signed
-    r11 = truncate r9: i32 to builtins.bool
-    if r11 goto L4 else goto L5 :: bool
+    r8 = list_get_item_unsafe a, r0
+    r9 = unbox(int, r8)
+    x = r9
+    r10 = unbox(bool, r7)
+    y = r10
+    r11 = PyObject_IsTrue(b)
+    r12 = r11 >= 0 :: signed
+    r13 = truncate r11: i32 to builtins.bool
+    if r13 goto L4 else goto L5 :: bool
 L4:
     x = 2
 L5:
 L6:
-    r12 = r0 + 2
-    r0 = r12
+    r14 = r0 + 2
+    r0 = r14
     goto L1
 L7:
-    r13 = CPy_NoErrOccurred()
+    r15 = CPy_NoErrOccurred()
+    keep_alive r1
 L8:
     return 1
 def g(a, b):
     a :: object
     b :: list
-    r0 :: object
-    r1, r2 :: short_int
+    r0 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r1 :: fast_iterable_ptr
+    r2 :: bool
+    r3, r4 :: short_int
     z :: int
-    r3 :: object
-    r4 :: native_int
-    r5 :: short_int
-    r6, r7 :: bit
-    r8, x :: bool
-    r9 :: object
-    r10, y :: int
-    r11, r12 :: short_int
-    r13 :: bit
+    r5 :: object
+    r6 :: native_int
+    r7 :: short_int
+    r8, r9 :: bit
+    r10, x :: bool
+    r11 :: object
+    r12, y :: int
+    r13, r14 :: short_int
+    r15 :: bit
 L0:
-    r0 = PyObject_GetIter(a)
-    r1 = 0
-    r2 = 0
-    z = r2
+    r1 = load_address r0
+    r2 = CPy_FastIterable_New(a, r1)
+    r3 = 0
+    r4 = 0
+    z = r4
 L1:
-    r3 = PyIter_Next(r0)
-    if is_error(r3) goto L6 else goto L2
+    r5 = CPy_FastIterable_Next(r1)
+    if is_error(r5) goto L6 else goto L2
 L2:
-    r4 = var_object_size b
-    r5 = r4 << 1
-    r6 = int_lt r1, r5
-    if r6 goto L3 else goto L6 :: bool
+    r6 = var_object_size b
+    r7 = r6 << 1
+    r8 = int_lt r3, r7
+    if r8 goto L3 else goto L6 :: bool
 L3:
-    r7 = int_lt r2, 10
-    if r7 goto L4 else goto L6 :: bool
+    r9 = int_lt r4, 10
+    if r9 goto L4 else goto L6 :: bool
 L4:
-    r8 = unbox(bool, r3)
-    x = r8
-    r9 = list_get_item_unsafe b, r1
-    r10 = unbox(int, r9)
-    y = r10
+    r10 = unbox(bool, r5)
+    x = r10
+    r11 = list_get_item_unsafe b, r3
+    r12 = unbox(int, r11)
+    y = r12
     x = 0
 L5:
-    r11 = r1 + 2
-    r1 = r11
-    r12 = r2 + 2
-    r2 = r12
-    z = r12
+    r13 = r3 + 2
+    r3 = r13
+    r14 = r4 + 2
+    r4 = r14
+    z = r14
     goto L1
 L6:
-    r13 = CPy_NoErrOccurred()
+    r15 = CPy_NoErrOccurred()
+    keep_alive r0
 L7:
     return 1
 
