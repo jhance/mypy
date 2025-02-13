@@ -2831,67 +2831,71 @@ def call_all(l: Iterable[int]) -> bool:
 def call_any(l):
     l :: object
     r0 :: bool
-    r1 :: CPyFastIterable{type:i32, obj:object, index:native_int}
-    r2 :: fast_iterable_ptr
-    r3 :: bool
-    r4 :: object
-    r5, i :: int
-    r6, r7 :: bit
+    r1, r2 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r3 :: fast_iterable_ptr
+    r4 :: bool
+    r5 :: object
+    r6, i :: int
+    r7, r8 :: bit
 L0:
     r0 = 0
-    r2 = load_address r1
-    r3 = CPy_FastIterable_New(l, r2)
+    r1 = fast_iter_init 
+    r2 = r1
+    r3 = load_address r2
+    r4 = CPy_FastIterable_New(l, r3)
 L1:
-    r4 = CPy_FastIterable_Next(r2)
-    if is_error(r4) goto L6 else goto L2
+    r5 = CPy_FastIterable_Next(r3)
+    if is_error(r5) goto L6 else goto L2
 L2:
-    r5 = unbox(int, r4)
-    i = r5
-    r6 = int_eq i, 0
-    if r6 goto L3 else goto L4 :: bool
-L3:
-    r0 = 1
-    goto L8
-L4:
-L5:
-    goto L1
-L6:
-    r7 = CPy_NoErrOccurred()
-    keep_alive r1
-L7:
-L8:
-    return r0
-def call_all(l):
-    l :: object
-    r0 :: bool
-    r1 :: CPyFastIterable{type:i32, obj:object, index:native_int}
-    r2 :: fast_iterable_ptr
-    r3 :: bool
-    r4 :: object
-    r5, i :: int
-    r6, r7, r8 :: bit
-L0:
-    r0 = 1
-    r2 = load_address r1
-    r3 = CPy_FastIterable_New(l, r2)
-L1:
-    r4 = CPy_FastIterable_Next(r2)
-    if is_error(r4) goto L6 else goto L2
-L2:
-    r5 = unbox(int, r4)
-    i = r5
-    r6 = int_eq i, 0
-    r7 = r6 ^ 1
+    r6 = unbox(int, r5)
+    i = r6
+    r7 = int_eq i, 0
     if r7 goto L3 else goto L4 :: bool
 L3:
-    r0 = 0
+    r0 = 1
     goto L8
 L4:
 L5:
     goto L1
 L6:
     r8 = CPy_NoErrOccurred()
-    keep_alive r1
+    keep_alive r2
+L7:
+L8:
+    return r0
+def call_all(l):
+    l :: object
+    r0 :: bool
+    r1, r2 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r3 :: fast_iterable_ptr
+    r4 :: bool
+    r5 :: object
+    r6, i :: int
+    r7, r8, r9 :: bit
+L0:
+    r0 = 1
+    r1 = fast_iter_init 
+    r2 = r1
+    r3 = load_address r2
+    r4 = CPy_FastIterable_New(l, r3)
+L1:
+    r5 = CPy_FastIterable_Next(r3)
+    if is_error(r5) goto L6 else goto L2
+L2:
+    r6 = unbox(int, r5)
+    i = r6
+    r7 = int_eq i, 0
+    r8 = r7 ^ 1
+    if r8 goto L3 else goto L4 :: bool
+L3:
+    r0 = 0
+    goto L8
+L4:
+L5:
+    goto L1
+L6:
+    r9 = CPy_NoErrOccurred()
+    keep_alive r2
 L7:
 L8:
     return r0
@@ -2906,43 +2910,45 @@ def call_sum(l: Iterable[int], comparison: Callable[[int], bool]) -> int:
 def call_sum(l, comparison):
     l, comparison :: object
     r0 :: int
-    r1 :: CPyFastIterable{type:i32, obj:object, index:native_int}
-    r2 :: fast_iterable_ptr
-    r3 :: bool
-    r4 :: object
-    r5, x :: int
-    r6 :: object
-    r7 :: object[1]
-    r8 :: object_ptr
-    r9 :: object
-    r10, r11 :: bool
-    r12, r13 :: int
-    r14 :: bit
+    r1, r2 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r3 :: fast_iterable_ptr
+    r4 :: bool
+    r5 :: object
+    r6, x :: int
+    r7 :: object
+    r8 :: object[1]
+    r9 :: object_ptr
+    r10 :: object
+    r11, r12 :: bool
+    r13, r14 :: int
+    r15 :: bit
 L0:
     r0 = 0
-    r2 = load_address r1
-    r3 = CPy_FastIterable_New(l, r2)
+    r1 = fast_iter_init 
+    r2 = r1
+    r3 = load_address r2
+    r4 = CPy_FastIterable_New(l, r3)
 L1:
-    r4 = CPy_FastIterable_Next(r2)
-    if is_error(r4) goto L4 else goto L2
+    r5 = CPy_FastIterable_Next(r3)
+    if is_error(r5) goto L4 else goto L2
 L2:
-    r5 = unbox(int, r4)
-    x = r5
-    r6 = box(int, x)
-    r7 = [r6]
-    r8 = load_address r7
-    r9 = PyObject_Vectorcall(comparison, r8, 1, 0)
-    keep_alive r6
-    r10 = unbox(bool, r9)
-    r11 = r10 << 1
-    r12 = extend r11: builtins.bool to builtins.int
-    r13 = CPyTagged_Add(r0, r12)
-    r0 = r13
+    r6 = unbox(int, r5)
+    x = r6
+    r7 = box(int, x)
+    r8 = [r7]
+    r9 = load_address r8
+    r10 = PyObject_Vectorcall(comparison, r9, 1, 0)
+    keep_alive r7
+    r11 = unbox(bool, r10)
+    r12 = r11 << 1
+    r13 = extend r12: builtins.bool to builtins.int
+    r14 = CPyTagged_Add(r0, r13)
+    r0 = r14
 L3:
     goto L1
 L4:
-    r14 = CPy_NoErrOccurred()
-    keep_alive r1
+    r15 = CPy_NoErrOccurred()
+    keep_alive r2
 L5:
     return r0
 
@@ -3448,12 +3454,12 @@ def range_object():
     r6 :: object
     r7, r :: range
     sum :: int
-    r8 :: CPyFastIterable{type:i32, obj:object, index:native_int}
-    r9 :: fast_iterable_ptr
-    r10 :: bool
-    r11 :: object
-    r12, i, r13 :: int
-    r14 :: bit
+    r8, r9 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r10 :: fast_iterable_ptr
+    r11 :: bool
+    r12 :: object
+    r13, i, r14 :: int
+    r15 :: bit
 L0:
     r0 = load_address PyRange_Type
     r1 = object 4
@@ -3466,21 +3472,23 @@ L0:
     r7 = cast(range, r6)
     r = r7
     sum = 0
-    r9 = load_address r8
-    r10 = CPy_FastIterable_New(r, r9)
+    r8 = fast_iter_init 
+    r9 = r8
+    r10 = load_address r9
+    r11 = CPy_FastIterable_New(r, r10)
 L1:
-    r11 = CPy_FastIterable_Next(r9)
-    if is_error(r11) goto L4 else goto L2
+    r12 = CPy_FastIterable_Next(r10)
+    if is_error(r12) goto L4 else goto L2
 L2:
-    r12 = unbox(int, r11)
-    i = r12
-    r13 = CPyTagged_Add(sum, i)
-    sum = r13
+    r13 = unbox(int, r12)
+    i = r13
+    r14 = CPyTagged_Add(sum, i)
+    sum = r14
 L3:
     goto L1
 L4:
-    r14 = CPy_NoErrOccurred()
-    keep_alive r8
+    r15 = CPy_NoErrOccurred()
+    keep_alive r9
 L5:
     return 1
 def range_in_loop():

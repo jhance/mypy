@@ -3,7 +3,7 @@ from __future__ import annotations
 from mypyc.ir.ops import GetElementPtr, LoadMem, Value
 from mypyc.ir.rtypes import PyVarObject, c_pyssize_t_rprimitive
 from mypyc.irbuild.ll_builder import LowLevelIRBuilder
-from mypyc.lower.registry import lower_primitive_op, lower_primitive_op_opt
+from mypyc.lower.registry import lower_primitive_op
 
 
 @lower_primitive_op("var_object_size")
@@ -12,7 +12,7 @@ def var_object_size(builder: LowLevelIRBuilder, args: list[Value], line: int) ->
     return builder.add(LoadMem(c_pyssize_t_rprimitive, elem_address))
 
 
-@lower_primitive_op_opt("fast_iter_init")
+@lower_primitive_op("fast_iter_init")
 def fast_iter_init(builder: LowLevelIRBuilder, args: list[Value], line: int) -> None:
     # This is a dummy op that only helps data flow analysis. Remove it.
     return None

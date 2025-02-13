@@ -719,18 +719,3 @@ L2:
 L3:
     r5 = <error> :: float
     return r5
-
-[case testSequenceIter]
-from typing import Sequence, List
-
-def loop(a: Sequence[int]) -> None:
-    for b in a:
-        pass
-
-[case testSequenceNestedIter]
-from typing import Sequence, List
-
-def loop(a: Sequence[int]) -> None:
-    for x in range(100):
-        for b in a:
-            pass

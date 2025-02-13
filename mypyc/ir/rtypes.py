@@ -107,6 +107,8 @@ def deserialize_type(data: JsonDict | str, ctx: DeserMaps) -> RType:
         return RTuple.deserialize(data, ctx)
     elif data[".class"] == "RUnion":
         return RUnion.deserialize(data, ctx)
+    elif data[".class"] == "RStruct":
+        return RStruct.deserialize(data, ctx)
     raise NotImplementedError("unexpected .class {}".format(data[".class"]))
 
 
@@ -821,11 +823,20 @@ class RStruct(RType):
         return hash((self.name, tuple(self.names), tuple(self.types)))
 
     def serialize(self) -> JsonDict:
-        assert False
+        return {
+            ".class": "RStruct",
+            "name": self.name,
+            "names": self.names,
+            "types": [t.serialize() for t in self.types],
+        }
 
     @classmethod
     def deserialize(cls, data: JsonDict, ctx: DeserMaps) -> RStruct:
-        assert False
+        return RStruct(
+            name=data["name"],
+            names=data["names"],
+            types=[deserialize_type(t, ctx) for t in data["types"]],
+        )
 
 
 class RInstance(RType):

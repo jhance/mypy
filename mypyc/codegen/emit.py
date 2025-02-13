@@ -1088,6 +1088,9 @@ class Emitter:
         elif isinstance(rtype, RTuple):
             for i, item_type in enumerate(rtype.types):
                 self.emit_gc_visit(f"{target}.f{i}", item_type)
+        elif isinstance(rtype, RStruct):
+            for item, item_type in zip(rtype.names, rtype.types):
+                self.emit_gc_visit(f"{target}.{item}", item_type)
         elif self.ctype(rtype) == "PyObject *":
             # The simplest case.
             self.emit_line(f"Py_VISIT({target});")
@@ -1112,6 +1115,9 @@ class Emitter:
         elif isinstance(rtype, RTuple):
             for i, item_type in enumerate(rtype.types):
                 self.emit_gc_clear(f"{target}.f{i}", item_type)
+        elif isinstance(rtype, RStruct):
+            for item, item_type in zip(rtype.names, rtype.types):
+                self.emit_gc_clear(f"{target}.{item}", item_type)
         elif self.ctype(rtype) == "PyObject *" and self.c_undefined_value(rtype) == "NULL":
             # The simplest case.
             self.emit_line(f"Py_CLEAR({target});")

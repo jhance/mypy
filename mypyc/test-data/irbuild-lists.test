@@ -517,10 +517,31 @@ from typing import Sequence, List
 def loop(a: Sequence[int]) -> None:
     for b in a:
         pass
-[case testSequenceNestedIter]
-from typing import Sequence, List
+[out]
+def loop(a):
+    a :: object
+    r0, r1 :: CPyFastIterable{type:i32, obj:object, index:native_int}
+    r2 :: fast_iterable_ptr
+    r3 :: bool
+    r4 :: object
+    r5, b :: int
+    r6 :: bit
+L0:
+    r0 = fast_iter_init 
+    r1 = r0
+    r2 = load_address r1
+    r3 = CPy_FastIterable_New(a, r2)
+L1:
+    r4 = CPy_FastIterable_Next(r2)
+    if is_error(r4) goto L4 else goto L2
+L2:
+    r5 = unbox(int, r4)
+    b = r5
+L3:
+    goto L1
+L4:
+    r6 = CPy_NoErrOccurred()
+    keep_alive r1
+L5:
+    return 1
 
-def loop(a: Sequence[int]) -> None:
-    for x in range(100):
-        for b in a:
-            pass
