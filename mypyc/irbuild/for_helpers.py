@@ -66,7 +66,7 @@ from mypyc.primitives.dict_ops import (
     dict_value_iter_op,
 )
 from mypyc.primitives.exc_ops import no_err_occurred_op
-from mypyc.primitives.generic_ops import aiter_op, anext_op, iter_op, next_op, fast_iter_op, fast_iter_next_op
+from mypyc.primitives.generic_ops import aiter_op, anext_op, iter_op, next_op, fast_iter_op, fast_iter_next_op, fast_iter_init_op
 from mypyc.primitives.list_ops import list_append_op, list_get_item_unsafe_op, new_list_set_item_op
 from mypyc.primitives.misc_ops import stop_async_iteration_op
 from mypyc.primitives.registry import CFunctionDescription
@@ -589,7 +589,9 @@ class ForIterable(ForGenerator):
         # for the for-loop. If we are inside of a generator function, spill these into the
         # environment class.
         builder = self.builder
-        iter_reg = Register(CPyFastIterable, always_defined=True)
+        iter_reg = Register(CPyFastIterable)
+        dummy_init = builder.primitive_op(fast_iter_init_op, [], self.line)
+        builder.assign(iter_reg, dummy_init, self.line)
         iter_addr = builder.add(LoadAddress(
             fast_iterable_rprimitive, iter_reg, self.line
         ))

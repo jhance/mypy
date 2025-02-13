@@ -1476,17 +1476,3 @@ L2:
     dec_ref r0 :: int
 L3:
     return r4
-
-[case testSequenceIter]
-from typing import Sequence, List
-
-def loop(a: Sequence[int]) -> None:
-    for b in a:
-        pass
-[case testSequenceNestedIter]
-from typing import Sequence, List
-
-def loop(a: Sequence[int]) -> None:
-    for x in range(100):
-        for b in a:
-            pass

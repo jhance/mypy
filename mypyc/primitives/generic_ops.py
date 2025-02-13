@@ -22,11 +22,13 @@ from mypyc.ir.rtypes import (
     object_pointer_rprimitive,
     object_rprimitive,
     pointer_rprimitive,
+    CPyFastIterable,
 )
 from mypyc.primitives.registry import (
     ERR_NEG_INT,
     binary_op,
     custom_op,
+    custom_primitive_op,
     function_op,
     method_op,
     unary_op,
@@ -382,6 +384,15 @@ anext_op = custom_op(
     return_type=object_rprimitive,
     c_function_name="CPy_GetANext",
     error_kind=ERR_MAGIC,
+)
+
+# Dummy op that must be inserted before fast_iter_op so that mypyc knows
+# when the value is initialized. It gets removed in the lowering pass.
+fast_iter_init_op = custom_primitive_op(
+    name="fast_iter_init",
+    arg_types=[],
+    return_type=CPyFastIterable,
+    error_kind=ERR_NEVER,
 )
 
 fast_iter_op = custom_op(
